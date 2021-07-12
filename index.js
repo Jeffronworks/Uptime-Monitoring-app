@@ -29,18 +29,61 @@ const server = http.createServer((req, res) => {
   req.on("end", () => {
     buffer += decoder.end();
 
-    // Send the response
-    res.end("hello world");
+    // Choose the handler this request should go to. if one is not found, use the notfound handler
+    const chosenHandler =
+      typeof router[trimedPath] !== "undefined"
+        ? router[trimedPath]
+        : handlers.notFound;
 
-    // Log the request path
-    console.log(
-      `Request recieved on path ${trimedPath} with method: ${method} with  query string`,
-      queryStringObject
-    );
-    console.log("the request was recieved with these payload:", buffer);
+    // construct the data object to send to the handler
+
+    const data = {
+      trimedPath,
+      queryStringObject,
+      method,
+      headers,
+      payload: buffer,
+    };
+
+    // Route teh request ro the handler specified in the router
+    chosenHandler(data, (statusCode, payload) => {
+      // Use the status code called back by the handler, or default to 200
+      statusCode = typeof statusCode == "number" ? statusCode : 200;
+
+      // Use the payload called back by the handler, or default to an empty string
+      payload = typeof payload == "object" ? payload : {};
+
+      // Convert payload to string
+      const payloadString = JSON.stringify(payload);
+
+      // return the response
+      res.writeHead(statusCode);
+      res.end(payloadString);
+
+      // Log the request path
+      console.log("Returning this response:", statusCode, payloadString);
+    });
   });
 });
 
 server.listen(3000, () => {
   console.log("The server is listening on port 3000");
 });
+
+// Define the handlers
+const handlers = {};
+
+// Sample handler
+handlers.sample = (data, callback) => {
+  // callback a http status code, and a payload object5
+  callback(406, { name: "sample handler" });
+};
+
+// Not found handler
+handlers.notFound = (data, callback) => {
+  callback(404);
+};
+// Define request router
+const router = {
+  sample: handlers.sample,
+};
