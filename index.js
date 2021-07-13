@@ -1,10 +1,60 @@
 const http = require("http");
+const https = require("https");
 const url = require("url");
 const config = require("./config");
+const fs = require("fs");
 
 const StringDecoder = require("string_decoder").StringDecoder;
 
-const server = http.createServer((req, res) => {
+//Instantiate the Http server
+const httpServer = http.createServer((req, res) => {
+  unifiedServer(req, res);
+});
+
+//Instatiate the Https server
+const httpsServerOptions = {
+  key: fs.readFileSync("./https/key.pem"),
+  cert: fs.readFileSync("./https/cert.perm"),
+};
+const httpsServer = https.createServer(httpsServerOptions, (req, res) => {
+  unifiedServer(req, res);
+});
+
+//Start the https sever
+httpsServer.listen(config.httpsPort, () => {
+  console.log(
+    `The server is listening on port ${config.httpsPort} in ${config.envName} mode now`
+  );
+});
+
+// start the http server
+httpServer.listen(config.httpPort, () => {
+  console.log(
+    `The server is listening on port ${config.httpPort} in ${config.envName} mode now`
+  );
+});
+
+// Define the handlers
+const handlers = {};
+
+// Sample handler
+handlers.sample = (data, callback) => {
+  // callback a http status code, and a payload object5
+  callback(406, { name: "sample handler" });
+};
+
+// Not found handler
+handlers.notFound = (data, callback) => {
+  callback(404);
+};
+// Define request router
+const router = {
+  sample: handlers.sample,
+};
+
+// All the server logic for both Http and https server
+
+const unifiedServer = (req, res) => {
   // Get the url and parse it
   const parsedUrl = url.parse(req.url, true);
 
@@ -67,29 +117,4 @@ const server = http.createServer((req, res) => {
       console.log("Returning this response:", statusCode, payloadString);
     });
   });
-});
-
-// start the server
-server.listen(config.port, () => {
-  console.log(
-    `The server is listening on port ${config.port} in ${config.envName} mode now`
-  );
-});
-
-// Define the handlers
-const handlers = {};
-
-// Sample handler
-handlers.sample = (data, callback) => {
-  // callback a http status code, and a payload object5
-  callback(406, { name: "sample handler" });
-};
-
-// Not found handler
-handlers.notFound = (data, callback) => {
-  callback(404);
-};
-// Define request router
-const router = {
-  sample: handlers.sample,
 };
