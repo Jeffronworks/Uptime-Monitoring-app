@@ -13,8 +13,8 @@ const _data = require("./lib/data");
 const StringDecoder = require("string_decoder").StringDecoder;
 
 //Testing
-_data.read("test", "newfile1", (err, data) => {
-  console.log("this was the error...", err, "this was the data: ", data);
+_data.update("test", "newfile", { referee: "checking goal" }, (err) => {
+  console.log("Error...", err);
 });
 
 //Instantiate the Http server
