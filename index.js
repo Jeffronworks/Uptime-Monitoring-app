@@ -6,11 +6,12 @@
 const http = require("http");
 const https = require("https");
 const url = require("url");
-const config = require("./config");
+const config = require("./lib/config");
 const fs = require("fs");
-const _data = require("./lib/data");
+const handlers = require("./lib/handlers");
 
 const StringDecoder = require("string_decoder").StringDecoder;
+const helpers = require("./lib/helpers");
 
 //Instantiate the Http server
 const httpServer = http.createServer((req, res) => {
@@ -40,24 +41,6 @@ httpServer.listen(config.httpPort, () => {
   );
 });
 
-// Define the handlers
-const handlers = {};
-
-// ping handler
-handlers.ping = (data, callback) => {
-  // callback a http status code, and a payload object5
-  callback(200);
-};
-
-// Not found handler
-handlers.notFound = (data, callback) => {
-  callback(404);
-};
-// Define request router
-const router = {
-  ping: handlers.ping,
-};
-
 // All the server logic for both Http and https server
 
 const unifiedServer = (req, res) => {
@@ -72,7 +55,7 @@ const unifiedServer = (req, res) => {
   const queryStringObject = parsedUrl.query;
 
   // Get HTTP method
-  const method = req.method.toUpperCase();
+  const method = req.method.toLowerCase();
 
   // Get header object
   const headers = req.headers;
@@ -100,7 +83,7 @@ const unifiedServer = (req, res) => {
       queryStringObject,
       method,
       headers,
-      payload: buffer,
+      payload: helpers.parseJsonToObject(buffer),
     };
 
     // Route teh request ro the handler specified in the router
@@ -123,4 +106,10 @@ const unifiedServer = (req, res) => {
       console.log("Returning this response:", statusCode, payloadString);
     });
   });
+};
+
+// Define request router
+const router = {
+  ping: handlers.ping,
+  users: handlers.users,
 };
