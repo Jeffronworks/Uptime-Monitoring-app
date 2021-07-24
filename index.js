@@ -12,11 +12,6 @@ const _data = require("./lib/data");
 
 const StringDecoder = require("string_decoder").StringDecoder;
 
-//Testing
-_data.update("test", "newfile", { referee: "checking goal" }, (err) => {
-  console.log("Error...", err);
-});
-
 //Instantiate the Http server
 const httpServer = http.createServer((req, res) => {
   unifiedServer(req, res);
