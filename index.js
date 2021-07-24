@@ -1,10 +1,21 @@
+/*
+ * Primary file for the API
+ *
+ */
+
 const http = require("http");
 const https = require("https");
 const url = require("url");
 const config = require("./config");
 const fs = require("fs");
+const _data = require("./lib/data");
 
 const StringDecoder = require("string_decoder").StringDecoder;
+
+//Testing
+_data.create("test", "newfile", { foo: "bar" }, (err) => {
+  console.log("this was the error...", err);
+});
 
 //Instantiate the Http server
 const httpServer = http.createServer((req, res) => {
